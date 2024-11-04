@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>notes.code</title>
+    <style>
+        /* Dark Theme CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #000; /* Set background to black */
+            color: #f1f1f1;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: #333;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #f1f1f1;
+        }
+
+        #noteInput {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            background-color: #444;
+            color: #f1f1f1;
+            border: 1px solid #555;
+            border-radius: 5px;
+            resize: none;
+            margin-bottom: 10px;
+            font-size: 16px;
+            font-family: Arial, sans-serif; /* Regular font for notes */
+            overflow: auto; /* Enable scrolling */
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        h2 {
+            margin-top: 20px;
+            color: #f1f1f1;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        li {
+            background-color: #444;
+            padding: 15px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            margin-top: 10px;
+            text-align: left;
+            color: #f1f1f1;
+            font-family: Arial, sans-serif;
+            position: relative;
+            padding-right: 40px; /* Add padding for delete button */
+        }
+
+        .note-text {
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+        }
+
+        .note-metadata {
+            font-size: 0.85em;
+            color: #aaa;
+            margin-bottom: 5px;
+        }
+
+        .code {
+            font-family: monospace; /* Monospace font for code */
+            background-color: #222; /* Darker background for code */
+            color: #bada55; /* Light green text for code visibility */
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        li button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 3px 6px;
+            font-size: 12px;
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            cursor: pointer;
+        }
+
+        li button:hover {
+            background-color: #c82333;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            padding-top: 60px; /* Location of the box */
+        }
+
+        .modal-content {
+            background-color: #444;
+            margin: 5% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #555;
+            width: 80%; /* Could be more or less, depending on screen size */
+            color: #f1f1f1;
+            border-radius: 8px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .guide-text {
+            margin-top: 20px;
+            line-height: 1.6;
+        }
+
+        /* Image styles */
+        .note-image {
+            max-width: 100%;
+            height: auto;
+            margin-top: 10px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>note.code</h1>
+        <textarea id="noteInput" placeholder="Write your note or code here..." ondrop="drop(event)" ondragover="allowDrop(event)"></textarea>
+        <button onclick="addNote()">Add Note</button>
+        <button onclick="showGuide()">Guide</button>
+        <h2>Your Notes</h2>
+        <ul id="noteList"></ul>
+    </div>
+
+    <!-- Modal for Guide -->
+    <div id="guideModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeGuide()">&times;</span>
+            <h2>Formatting Guide</h2>
+            <div class="guide-text">
+                <p>You can format your notes using the following markup:</p>
+                <ul>
+                    <li><strong>[b]text[/b]</strong> - Makes text <strong>bold</strong></li>
+                    <li><strong>[i]text[/i]</strong> - Makes text <em>italic</em></li>
+                    <li><strong>[u]text[/u]</strong> - Underlines text</li>
+                    <li><strong>`code`</strong> - Displays text in <code>monospace</code></li>
+                    <li>Drag and drop an image to insert it into your note.</li>
+                </ul>
+                <p>Example:</p>
+                <p>[b]This is bold[/b], [i]this is italic[/i], and [u]this is underlined[/u].</p>
+                <p>Use backticks to format code: <code>`let x = 10;`</code></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load saved notes on page load
+        window.onload = function() {
+            loadNotes();
+        };
+
+        function addNote() {
+            const noteInput = document.getElementById("noteInput");
+            const noteText = noteInput.value.trim();
+
+            if (noteText === "") {
+                alert("Please write a note or code!");
+                return;
+            }
+
+            const currentDate = new Date();
+            const formattedDate = currentDate.toLocaleDateString() + ' ' + currentDate.toLocaleTimeString();
+
+            const notes = getNotes();
+            notes.unshift({
+                text: noteText,
+                date: formattedDate
+            });
+            saveNotes(notes);
+
+            noteInput.value = ""; // Clear the input
+            displayNotes();
+        }
+
+        function displayNotes() {
+            const notes = getNotes();
+            const noteList = document.getElementById("noteList");
+            noteList.innerHTML = ""; // Clear the current list
+
+            notes.forEach((note, index) => {
+                const listItem = document.createElement("li");
+
+                const noteMetadata = document.createElement("div");
+                noteMetadata.className = "note-metadata";
+                noteMetadata.innerHTML = `#${index + 1} - ${note.date}`;
+                listItem.appendChild(noteMetadata);
+
+                const noteText = document.createElement("div");
+                noteText.className = "note-text";
+                noteText.innerHTML = formatNoteText(note.text); // Format the note text
+                listItem.appendChild(noteText);
+
+                const deleteButton = document.createElement("button");
+                deleteButton.innerText = "X";
+                deleteButton.onclick = () => deleteNote(index);
+                listItem.appendChild(deleteButton);
+
+                noteList.appendChild(listItem);
+            });
+
+            // Add a space between the most recent note and the previous ones
+            if (notes.length > 0) {
+                noteList.lastChild.style.marginBottom = "20px"; // Add space after the most recent note
+            }
+        }
+
+        function formatNoteText(text) {
+            // Format text for bold, italic, underline, and monospace
+            text = text.replace(/\[b\](.*?)\[\/b\]/g, '<strong>$1</strong>');
+            text = text.replace(/\[i\](.*?)\[\/i\]/g, '<em>$1</em>');
+            text = text.replace(/\[u\](.*?)\[\/u\]/g, '<u>$1</u>');
+            text = text.replace(/`(.*?)`/g, '<code class="code">$1</code>');
+
+            // Handle image insertion
+            const imageRegex = /!\[.*?\]\((.*?)\)/g; // For Markdown image format
+            text = text.replace(imageRegex, '<img src="$1" class="note-image" alt="Image" />');
+            return text;
+        }
+
+        function deleteNote(index) {
+            const notes = getNotes();
+            notes.splice(index, 1); // Remove the note
+            saveNotes(notes);
+            displayNotes(); // Update the displayed notes
+        }
+
+        function saveNotes(notes) {
+            localStorage.setItem("notes", JSON.stringify(notes));
+        }
+
+        function getNotes() {
+            const notes = localStorage.getItem("notes");
+            return notes ? JSON.parse(notes) : [];
+        }
+
+        // Functions to show and close the guide modal
+        function showGuide() {
+            document.getElementById("guideModal").style.display = "block";
+        }
+
+        function closeGuide() {
+            document.getElementById("guideModal").style.display = "none";
+        }
+
+        // Close the modal when clicking outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById("guideModal");
+            if (event.target === modal) {
+                closeGuide();
+            }
+        };
+
+        // Allow drop event for images
+        function allowDrop(event) {
+            event.preventDefault(); // Prevent default behavior (Prevent file from being opened)
+        }
+
+        // Handle image drop
+        function drop(event) {
+            event.preventDefault();
+            const files = event.dataTransfer.files;
+
+            if (files.length > 0) {
+                const file = files[0];
+
+                // Check file size (5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert("File size exceeds 5MB. Please choose a smaller file.");
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imageUrl = e.target.result;
+                    const noteInput = document.getElementById("noteInput");
+                    noteInput.value += `![image](${imageUrl})\n`; // Add Markdown image syntax to the textbox
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function loadNotes() {
+            displayNotes(); // Display notes after loading
+        }
+    </script>
+</body>
+</html>
